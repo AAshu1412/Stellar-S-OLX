@@ -120,7 +120,22 @@ impl HelloContract {
         1
     }
 
-    
+    pub fn get_all_data(env: Env)->Vec<UserDetail>{
+        let mut allD: Vec<UserDetail> = env.storage().instance().get(&DataKey::all_data).unwrap_or(Vec::new(&env));
+        allD
+    }
+
+    pub fn get_user_data(env: Env,_address:Address)->UserDetail{
+        let specific_user_default = UserDetail {
+            name: Bytes::new(&env),
+            address: _address.clone(),
+            user_balance: 0,
+            itemPlace: Vec::new(&env),
+            itemOwn: Vec::new(&env),
+        };
+        let mut _specific_user: UserDetail = env.storage().instance().get(&DataKey::specific_user(_address.clone())).unwrap_or(specific_user_default);
+        _specific_user
+    }
 }
 
 mod test;
