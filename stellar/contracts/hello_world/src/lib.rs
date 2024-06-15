@@ -1,11 +1,14 @@
 #![no_std]
-use soroban_sdk::{contract,Bytes, contracttype,contractimpl,token, Address, symbol_short,Symbol, vec, Env, Vec,Map};
+use soroban_sdk::{
+    contract, contractimpl, contracttype, symbol_short, token, vec, Address, Bytes, Env, Map,
+    Symbol, Vec,
+};
 
 #[contracttype]
 #[derive(Clone)]
 pub enum DataKey {
     all_data,
-    specific_user(Address)
+    specific_user(Address),
 }
 
 #[contracttype]
@@ -22,7 +25,7 @@ pub struct Item_place {
 pub struct Item_own {
     pub nft_hash: Bytes,
     pub name: Bytes,
-    pub owner: Address
+    pub owner: Address,
 }
 
 #[contracttype]
@@ -30,13 +33,10 @@ pub struct Item_own {
 pub struct UserDetail {
     pub name: Bytes,
     pub address: Address,
-    pub user_balance:i128,
+    pub user_balance: i128,
     pub itemPlace: Vec<Item_place>,
-    pub itemOwn: Vec<Item_own>
+    pub itemOwn: Vec<Item_own>,
 }
-// const env = Env::default();
-// const allData: Symbol = symbol_short!("allData");
-        // let mut addaw = Vec::<UserDetail>::new(&env);
 
 
 // Bytes::from_slice(
@@ -57,16 +57,15 @@ pub struct HelloContract;
 
 #[contractimpl]
 impl HelloContract {
-    // pub const allData: Vec<UserDetail>; 
+    // pub const allData: Vec<UserDetail>;
 
-    pub fn initialize(env: Env,_name:Bytes, _address:Address)->u32{
-        let user=token::Client::new(&env, &_address);
+    pub fn initialize(env: Env, _name: Bytes, _address: Address) -> u32 {
+
+        let user = token::Client::new(&env, &_address);
         // let mut op=Map::<Address, UserDetail>::new(&env);
-
 
         // init allData
         // let mut allData = Vec::<UserDetail>::new(&env);
-   
 
         // let mut count:u32 = 69;
         // env.storage().instance().set(&symbol_short!("uwu"), &count);
@@ -75,38 +74,53 @@ impl HelloContract {
         // env.storage().instance().set(&symbol_short!("all_data"), &allData);
 
         // get all data
-        let mut allD:Vec<UserDetail> = env.storage().instance().get(&DataKey::all_data).unwrap_or(Vec::new(&env));
-        let mut _userDetails=UserDetail{
-               name:_name,
-               address:_address.clone(),
-               user_balance:user.balance(&_address),
-               itemPlace:Vec::new(&env),
-               itemOwn:Vec::new(&env),
+        let mut allD: Vec<UserDetail> = env.storage().instance().get(&DataKey::all_data).unwrap_or(Vec::new(&env));
+        let mut _userDetails = UserDetail {
+            name: _name,
+            address: _address.clone(),
+            user_balance: user.balance(&_address),
+            itemPlace: Vec::new(&env),
+            itemOwn: Vec::new(&env),
         };
-        allD.push_front(_userDetails.clone());
+        allD.push_back(_userDetails.clone());
         env.storage().instance().set(&DataKey::specific_user(_address.clone()), &_userDetails);
         env.storage().instance().set(&DataKey::all_data, &allD);
         env.storage().instance().extend_ttl(100, 100);
         1
-       
-        
     }
 
-    pub fn place_item(env: Env,_nft_hash:Bytes,_name:Bytes,_owner:Address,_cost:i128){
-            let mut _item_place=Item_place{
-                nft_hash:_nft_hash,
-                name:_name,
-                owner:_owner.clone(),
-                cost:_cost
-            };
-            let mut allD:Vec<UserDetail> = env.storage().instance().get(&DataKey::all_data).unwrap_or(Vec::new(&env));
-            
-            for users in allD{
-                if users.address==_owner{
-                    user
-                }
+    pub fn place_item(env: Env,_nft_hash: Bytes,_name: Bytes,_owner: Address,_cost: i128,) -> u32 {
+
+        let mut _item_place = Item_place {
+            nft_hash: _nft_hash,
+            name: _name,
+            owner: _owner.clone(),
+            cost: _cost,
+        };
+        let mut allD: Vec<UserDetail> = env.storage().instance().get(&DataKey::all_data).unwrap_or(Vec::new(&env));
+
+        for mut users in allD.iter() {
+            if users.address == _owner {
+                users.itemPlace.push_back(_item_place.clone());
             }
+        }
+        env.storage().instance().set(&DataKey::all_data, &allD);
+
+        let specific_user_default = UserDetail {
+            name: Bytes::new(&env),
+            address: _owner.clone(),
+            user_balance: 0,
+            itemPlace: Vec::new(&env),
+            itemOwn: Vec::new(&env),
+        };
+
+        let mut _specific_user: UserDetail = env.storage().instance().get(&DataKey::specific_user(_owner.clone())).unwrap_or(specific_user_default);
+        env.storage().instance().set(&DataKey::specific_user(_owner.clone()), &_specific_user);
+        env.storage().instance().extend_ttl(100, 100);
+        1
     }
+
+    
 }
 
 mod test;
