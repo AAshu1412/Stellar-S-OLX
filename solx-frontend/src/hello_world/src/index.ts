@@ -33,7 +33,7 @@ if (typeof window !== 'undefined') {
 export const networks = {
   testnet: {
     networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CAEMDGD37TBPYEA2LYUFUI5WR5W37RWWE5U7AU7JWQ3ACERAO5WVAPSK",
+    contractId: "CA2MWV2ET76WDPXW4AG5UI6FTKOUHVKWQ43MURIBIB6PBT54XPCAWFVN",
   }
 } as const
 
@@ -51,10 +51,10 @@ export interface AllowanceValue {
 
 export type DataKey = {tag: "Allowance", values: readonly [AllowanceDataKey]} | {tag: "Balance", values: readonly [string]} | {tag: "State", values: readonly [string]} | {tag: "Admin", values: void};
 
-export type GetData = {tag: "all_data", values: void} | {tag: "specific_user", values: readonly [string]};
+export type GetData = {tag: "AllData", values: void} | {tag: "SpecificUser", values: readonly [string]};
 
 
-export interface Item_place {
+export interface ItemPlace {
   cost: i128;
   name: string;
   nft_hash: string;
@@ -62,7 +62,7 @@ export interface Item_place {
 }
 
 
-export interface Item_own {
+export interface ItemOwn {
   name: string;
   nft_hash: string;
   owner: string;
@@ -71,8 +71,8 @@ export interface Item_own {
 
 export interface UserDetail {
   address: string;
-  itemOwn: Array<Item_own>;
-  itemPlace: Array<Item_place>;
+  item_own: Array<ItemOwn>;
+  item_place: Array<ItemPlace>;
   name: string;
   user_balance: i128;
 }
@@ -92,7 +92,7 @@ export interface Client {
   /**
    * Construct and simulate a initialize transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  initialize: ({_name, _address}: {_name: string, _address: string}, options?: {
+  initialize: ({name, address}: {name: string, address: string}, options?: {
     /**
      * The fee to pay for the transaction. Default: BASE_FEE
      */
@@ -112,7 +112,7 @@ export interface Client {
   /**
    * Construct and simulate a place_item transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  place_item: ({_nft_hash, _name, _owner, _cost}: {_nft_hash: string, _name: string, _owner: string, _cost: i128}, options?: {
+  place_item: ({nft_hash, name, owner, cost}: {nft_hash: string, name: string, owner: string, cost: i128}, options?: {
     /**
      * The fee to pay for the transaction. Default: BASE_FEE
      */
@@ -152,7 +152,7 @@ export interface Client {
   /**
    * Construct and simulate a get_user_data transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  get_user_data: ({_address}: {_address: string}, options?: {
+  get_user_data: ({address}: {address: string}, options?: {
     /**
      * The fee to pay for the transaction. Default: BASE_FEE
      */
@@ -212,7 +212,7 @@ export interface Client {
   /**
    * Construct and simulate a buy transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  buy: ({current_owner, buyer_address, _nft_hash, buy_price}: {current_owner: string, buyer_address: string, _nft_hash: string, buy_price: i128}, options?: {
+  buy: ({current_owner, buyer_address, nft_hash, buy_price}: {current_owner: string, buyer_address: string, nft_hash: string, buy_price: i128}, options?: {
     /**
      * The fee to pay for the transaction. Default: BASE_FEE
      */
@@ -236,17 +236,17 @@ export class Client extends ContractClient {
       new ContractSpec([ "AAAAAQAAAAAAAAAAAAAAEEFsbG93YW5jZURhdGFLZXkAAAACAAAAAAAAAARmcm9tAAAAEwAAAAAAAAAHc3BlbmRlcgAAAAAT",
         "AAAAAQAAAAAAAAAAAAAADkFsbG93YW5jZVZhbHVlAAAAAAACAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAAAAAAEWV4cGlyYXRpb25fbGVkZ2VyAAAAAAAABA==",
         "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAABAAAAAEAAAAAAAAACUFsbG93YW5jZQAAAAAAAAEAAAfQAAAAEEFsbG93YW5jZURhdGFLZXkAAAABAAAAAAAAAAdCYWxhbmNlAAAAAAEAAAATAAAAAQAAAAAAAAAFU3RhdGUAAAAAAAABAAAAEwAAAAAAAAAAAAAABUFkbWluAAAA",
-        "AAAAAgAAAAAAAAAAAAAAB0dldERhdGEAAAAAAgAAAAAAAAAAAAAACGFsbF9kYXRhAAAAAQAAAAAAAAANc3BlY2lmaWNfdXNlcgAAAAAAAAEAAAAT",
-        "AAAAAQAAAAAAAAAAAAAACkl0ZW1fcGxhY2UAAAAAAAQAAAAAAAAABGNvc3QAAAALAAAAAAAAAARuYW1lAAAAEAAAAAAAAAAIbmZ0X2hhc2gAAAAQAAAAAAAAAAVvd25lcgAAAAAAABM=",
-        "AAAAAQAAAAAAAAAAAAAACEl0ZW1fb3duAAAAAwAAAAAAAAAEbmFtZQAAABAAAAAAAAAACG5mdF9oYXNoAAAAEAAAAAAAAAAFb3duZXIAAAAAAAAT",
-        "AAAAAQAAAAAAAAAAAAAAClVzZXJEZXRhaWwAAAAAAAUAAAAAAAAAB2FkZHJlc3MAAAAAEwAAAAAAAAAHaXRlbU93bgAAAAPqAAAH0AAAAAhJdGVtX293bgAAAAAAAAAJaXRlbVBsYWNlAAAAAAAD6gAAB9AAAAAKSXRlbV9wbGFjZQAAAAAAAAAAAARuYW1lAAAAEAAAAAAAAAAMdXNlcl9iYWxhbmNlAAAACw==",
-        "AAAAAAAAAAAAAAAKaW5pdGlhbGl6ZQAAAAAAAgAAAAAAAAAFX25hbWUAAAAAAAAQAAAAAAAAAAhfYWRkcmVzcwAAABMAAAABAAAABA==",
-        "AAAAAAAAAAAAAAAKcGxhY2VfaXRlbQAAAAAABAAAAAAAAAAJX25mdF9oYXNoAAAAAAAAEAAAAAAAAAAFX25hbWUAAAAAAAAQAAAAAAAAAAZfb3duZXIAAAAAABMAAAAAAAAABV9jb3N0AAAAAAAACwAAAAEAAAAE",
+        "AAAAAgAAAAAAAAAAAAAAB0dldERhdGEAAAAAAgAAAAAAAAAAAAAAB0FsbERhdGEAAAAAAQAAAAAAAAAMU3BlY2lmaWNVc2VyAAAAAQAAABM=",
+        "AAAAAQAAAAAAAAAAAAAACUl0ZW1QbGFjZQAAAAAAAAQAAAAAAAAABGNvc3QAAAALAAAAAAAAAARuYW1lAAAAEAAAAAAAAAAIbmZ0X2hhc2gAAAAQAAAAAAAAAAVvd25lcgAAAAAAABM=",
+        "AAAAAQAAAAAAAAAAAAAAB0l0ZW1Pd24AAAAAAwAAAAAAAAAEbmFtZQAAABAAAAAAAAAACG5mdF9oYXNoAAAAEAAAAAAAAAAFb3duZXIAAAAAAAAT",
+        "AAAAAQAAAAAAAAAAAAAAClVzZXJEZXRhaWwAAAAAAAUAAAAAAAAAB2FkZHJlc3MAAAAAEwAAAAAAAAAIaXRlbV9vd24AAAPqAAAH0AAAAAdJdGVtT3duAAAAAAAAAAAKaXRlbV9wbGFjZQAAAAAD6gAAB9AAAAAJSXRlbVBsYWNlAAAAAAAAAAAAAARuYW1lAAAAEAAAAAAAAAAMdXNlcl9iYWxhbmNlAAAACw==",
+        "AAAAAAAAAAAAAAAKaW5pdGlhbGl6ZQAAAAAAAgAAAAAAAAAEbmFtZQAAABAAAAAAAAAAB2FkZHJlc3MAAAAAEwAAAAEAAAAE",
+        "AAAAAAAAAAAAAAAKcGxhY2VfaXRlbQAAAAAABAAAAAAAAAAIbmZ0X2hhc2gAAAAQAAAAAAAAAARuYW1lAAAAEAAAAAAAAAAFb3duZXIAAAAAAAATAAAAAAAAAARjb3N0AAAACwAAAAEAAAAE",
         "AAAAAAAAAAAAAAAMZ2V0X2FsbF9kYXRhAAAAAAAAAAEAAAPqAAAH0AAAAApVc2VyRGV0YWlsAAA=",
-        "AAAAAAAAAAAAAAANZ2V0X3VzZXJfZGF0YQAAAAAAAAEAAAAAAAAACF9hZGRyZXNzAAAAEwAAAAEAAAfQAAAAClVzZXJEZXRhaWwAAA==",
+        "AAAAAAAAAAAAAAANZ2V0X3VzZXJfZGF0YQAAAAAAAAEAAAAAAAAAB2FkZHJlc3MAAAAAEwAAAAEAAAfQAAAAClVzZXJEZXRhaWwAAA==",
         "AAAAAAAAAAAAAAAEbWludAAAAAIAAAAAAAAAAnRvAAAAAAATAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAA",
         "AAAAAAAAAAAAAAAHYmFsYW5jZQAAAAABAAAAAAAAAAJpZAAAAAAAEwAAAAEAAAAL",
-        "AAAAAAAAAAAAAAADYnV5AAAAAAQAAAAAAAAADWN1cnJlbnRfb3duZXIAAAAAAAATAAAAAAAAAA1idXllcl9hZGRyZXNzAAAAAAAAEwAAAAAAAAAJX25mdF9oYXNoAAAAAAAAEAAAAAAAAAAJYnV5X3ByaWNlAAAAAAAACwAAAAA=",
+        "AAAAAAAAAAAAAAADYnV5AAAAAAQAAAAAAAAADWN1cnJlbnRfb3duZXIAAAAAAAATAAAAAAAAAA1idXllcl9hZGRyZXNzAAAAAAAAEwAAAAAAAAAIbmZ0X2hhc2gAAAAQAAAAAAAAAAlidXlfcHJpY2UAAAAAAAALAAAAAA==",
         "AAAAAQAAAAAAAAAAAAAADVRva2VuTWV0YWRhdGEAAAAAAAADAAAAAAAAAAdkZWNpbWFsAAAAAAQAAAAAAAAABG5hbWUAAAAQAAAAAAAAAAZzeW1ib2wAAAAAABA=" ]),
       options
     )
