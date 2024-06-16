@@ -484,6 +484,7 @@ name = "hello-world"
 version = "0.0.0"
 dependencies = [
  "soroban-sdk",
+ "soroban-token-sdk",
 ]
 
 [[package]]
@@ -1105,6 +1106,15 @@ dependencies = [
  "stellar-xdr",
  "syn",
  "thiserror",
+]
+
+[[package]]
+name = "soroban-token-sdk"
+version = "20.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee8ed0ae2e5d5e67b7939200bba3712b4c81dcf87b2ccd68bba049bec64c780f"
+dependencies = [
+ "soroban-sdk",
 ]
 
 [[package]]
