@@ -14,7 +14,7 @@ use crate::storage_types::{INSTANCE_BUMP_AMOUNT, INSTANCE_LIFETIME_THRESHOLD};
 
 #[contracttype]
 #[derive(Clone)]
-pub enum DataKey {
+pub enum GetData {
     all_data,
     specific_user(Address),
 }
@@ -92,7 +92,7 @@ impl HelloContract {
         let mut allD: Vec<UserDetail> = env
             .storage()
             .instance()
-            .get(&DataKey::all_data)
+            .get(&GetData::all_data)
             .unwrap_or(Vec::new(&env));
         let mut _userDetails = UserDetail {
             name: _name,
@@ -104,8 +104,8 @@ impl HelloContract {
         allD.push_back(_userDetails.clone());
         env.storage()
             .instance()
-            .set(&DataKey::specific_user(_address.clone()), &_userDetails);
-        env.storage().instance().set(&DataKey::all_data, &allD);
+            .set(&GetData::specific_user(_address.clone()), &_userDetails);
+        env.storage().instance().set(&GetData::all_data, &allD);
         env.storage().instance().extend_ttl(100, 100);
         1
     }
@@ -126,7 +126,7 @@ impl HelloContract {
         let mut allD: Vec<UserDetail> = env
             .storage()
             .instance()
-            .get(&DataKey::all_data)
+            .get(&GetData::all_data)
             .unwrap_or(Vec::new(&env));
 
         for mut users in allD.iter() {
@@ -134,7 +134,7 @@ impl HelloContract {
                 users.itemPlace.push_back(_item_place.clone());
             }
         }
-        env.storage().instance().set(&DataKey::all_data, &allD);
+        env.storage().instance().set(&GetData::all_data, &allD);
 
         let specific_user_default = UserDetail {
             name: String::from_str(&env, ""),
@@ -147,11 +147,11 @@ impl HelloContract {
         let mut _specific_user: UserDetail = env
             .storage()
             .instance()
-            .get(&DataKey::specific_user(_owner.clone()))
+            .get(&GetData::specific_user(_owner.clone()))
             .unwrap_or(specific_user_default);
         env.storage()
             .instance()
-            .set(&DataKey::specific_user(_owner.clone()), &_specific_user);
+            .set(&GetData::specific_user(_owner.clone()), &_specific_user);
         env.storage().instance().extend_ttl(100, 100);
         1
     }
@@ -160,7 +160,7 @@ impl HelloContract {
         let mut allD: Vec<UserDetail> = env
             .storage()
             .instance()
-            .get(&DataKey::all_data)
+            .get(&GetData::all_data)
             .unwrap_or(Vec::new(&env));
         allD
     }
@@ -176,7 +176,7 @@ impl HelloContract {
         let mut _specific_user: UserDetail = env
             .storage()
             .instance()
-            .get(&DataKey::specific_user(_address.clone()))
+            .get(&GetData::specific_user(_address.clone()))
             .unwrap_or(specific_user_default);
         _specific_user
     }
@@ -209,8 +209,8 @@ impl HelloContract {
             itemPlace: Vec::new(&e),
             itemOwn: Vec::new(&e),
         };
-        let mut seller: UserDetail = e.storage().instance().get(&DataKey::specific_user(current_owner.clone())).unwrap_or(specific_user_default.clone());
-        let mut buyer: UserDetail = e.storage().instance().get(&DataKey::specific_user(buyer_address.clone())).unwrap_or(specific_user_default);
+        let mut seller: UserDetail = e.storage().instance().get(&GetData::specific_user(current_owner.clone())).unwrap_or(specific_user_default.clone());
+        let mut buyer: UserDetail = e.storage().instance().get(&GetData::specific_user(buyer_address.clone())).unwrap_or(specific_user_default);
 
         if buyer.user_balance < buy_price {
             panic!("Not enough money");
@@ -251,10 +251,10 @@ impl HelloContract {
             finding_index += 1;
         }
 
-        e.storage().instance().set(&DataKey::specific_user(current_owner.clone()), &seller);
-        e.storage().instance().set(&DataKey::specific_user(buyer_address.clone()), &buyer);
+        e.storage().instance().set(&GetData::specific_user(current_owner.clone()), &seller);
+        e.storage().instance().set(&GetData::specific_user(buyer_address.clone()), &buyer);
 
-        let mut allD: Vec<UserDetail> = e.storage().instance().get(&DataKey::all_data).unwrap_or(Vec::new(&e));
+        let mut allD: Vec<UserDetail> = e.storage().instance().get(&GetData::all_data).unwrap_or(Vec::new(&e));
         let mut finding_index = 0;
         for mut users in allD.iter() {
             if users.address == current_owner {
