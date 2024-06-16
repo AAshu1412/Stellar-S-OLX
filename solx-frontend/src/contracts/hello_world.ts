@@ -1,4 +1,4 @@
-import * as Client from '../hello_world/dist/index';
+import * as Client from '../hello_world/src';
 import { rpcUrl } from './util';
 
 export default new Client.Client({

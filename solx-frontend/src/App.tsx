@@ -34,7 +34,7 @@ function App() {
             return publicKey;
           };
           
-          const res = retrievePublicKey();
+          const res = await  retrievePublicKey();
           console.log(res);
         const { result } = await helloWorld.balance({id: "GBZV3NONYSUDVTEHATQO4BCJVFXJO3XQU5K32X3XREVZKSMMOZFO4ZXR"});
         console.log(result);
